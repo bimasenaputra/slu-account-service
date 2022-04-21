@@ -34,15 +34,17 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> registerForm) {
-        if (!(registerForm.containsKey("email") && registerForm.containsKey("username") && registerForm.containsKey("password"))) {
+        if (!(registerForm.containsKey("firstName") && registerForm.containsKey("lastName") && registerForm.containsKey("email") && registerForm.containsKey("username") && registerForm.containsKey("password"))) {
             return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
         }
 
+        var firstName = registerForm.get("firstName").toString();
+        var lastName = registerForm.get("lastName").toString();
         var email = registerForm.get("email").toString();
         var username = registerForm.get("username").toString();
         var password = registerForm.get("password").toString();
 
-        var account = new Account(email, username);
+        var account = new Account(email, username, firstName, lastName);
 
         var requestBody = new FirebaseRegisterRequest(email, password);
 
@@ -98,7 +100,7 @@ public class AuthController {
             System.out.println("AssertError");
             return resolveError(ErrorType.SERVER_ERROR);
         } catch (Exception e) {
-            System.out.println("Exception idk");
+            System.out.println(e.getMessage());
             return resolveError(ErrorType.UNKNOWN_ERROR);
         }
     }
