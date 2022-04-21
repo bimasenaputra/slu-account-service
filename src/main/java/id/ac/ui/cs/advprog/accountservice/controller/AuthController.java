@@ -1,8 +1,10 @@
 package id.ac.ui.cs.advprog.accountservice.controller;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import id.ac.ui.cs.advprog.accountservice.dto.FirebaseError;
+import id.ac.ui.cs.advprog.accountservice.dto.FirebaseErrorResponse;
 import id.ac.ui.cs.advprog.accountservice.dto.FirebaseLoginRequest;
+import id.ac.ui.cs.advprog.accountservice.exception.ErrorType;
 import id.ac.ui.cs.advprog.accountservice.service.AccountService;
 import io.netty.handler.timeout.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static id.ac.ui.cs.advprog.accountservice.util.ErrorHandler.resolveError;
 
 
 @RestController
@@ -47,21 +49,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> loginForm) {
         if (!(loginForm.containsKey("username") && loginForm.containsKey("password"))) {
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("message","Wrong request body payload");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
         }
-
         var email = accountService.getAccountEmailByUsername(loginForm.get("username").toString());
-        if (email.isEmpty()) {
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("message","Account with username " + loginForm.get("username") + " not found");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
+        if (email.isEmpty()) return resolveError(ErrorType.INVALID_EMAIL);
         var password = loginForm.get("password").toString();
-
         var requestBody = new FirebaseLoginRequest(email.get(), password);
-
         return resolveLogin(requestBody);
     }
 
@@ -81,16 +74,14 @@ public class AuthController {
                             .path("/accounts:signInWithPassword")
                             .queryParam("key",API_KEY)
                             .build())
-                    .body(BodyInserters.fromValue(requestBody)) // Request body payload
+                    .body(BodyInserters.fromValue(requestBody))
                     .retrieve()
                     .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
-                    .timeout(Duration.ofSeconds(5)) // Cancel request if it takes more than 5 secs
+                    .timeout(Duration.ofSeconds(5))
                     .block();
-            if (firebaseResponse == null) {
-                Map<String, Object> responseBody = new LinkedHashMap<>();
-                responseBody.put("message", "Response is empty");
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseBody);
-            }
+
+            assert firebaseResponse != null;
+
             // Move token from body to secure http-only cookie for security reason
             final String cookieValue = "idToken=" + firebaseResponse.get("idToken").toString()
                     + "; refreshToken=" + firebaseResponse.get("refreshToken").toString()
@@ -101,16 +92,24 @@ public class AuthController {
 
             firebaseResponse.remove("idToken");
             firebaseResponse.remove("refreshToken");
+            firebaseResponse.remove("localId");
+
             return ResponseEntity.ok().headers(responseHeader).body(firebaseResponse);
-        } catch (TimeoutException e) {
-            Map<String, Object> responseBody = new LinkedHashMap<>();
-            responseBody.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(responseBody);
         } catch (WebClientResponseException e) {
-            Map<String, Object> responseBody = new Gson().fromJson(
-                    e.getResponseBodyAsString(), new TypeToken<HashMap<String, Object>>() {}.getType()
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody);
+            FirebaseError error = new Gson().fromJson(e.getResponseBodyAsString(), FirebaseError.class);
+            FirebaseErrorResponse responseBody = error.getError();
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("message", responseBody.parseMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (TimeoutException e) {
+            System.out.println("Timeout");
+            return resolveError(ErrorType.TIMEOUT);
+        } catch (AssertionError e) {
+            System.out.println("AssertError");
+            return resolveError(ErrorType.SERVER_ERROR);
+        } catch (Exception e) {
+            System.out.println("Exception idk");
+            return resolveError(ErrorType.UNKNOWN_ERROR);
         }
     }
 }
