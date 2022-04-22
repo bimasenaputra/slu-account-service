@@ -54,9 +54,9 @@ public class AuthController {
         return resolveRegister(requestBody, account);
     }
 
-    @SuppressWarnings("unchecked")
     private ResponseEntity<Map<String, Object>> resolveRegister(FirebaseRegisterRequest requestBody, Account account) {
         try {
+            @SuppressWarnings("unchecked")
             // Call firebase REST API & fetch response payload
             var firebaseResponse = webClient.post()
                     .uri(builder -> builder
@@ -97,19 +97,16 @@ public class AuthController {
             response.put("message", responseBody.parseMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (TimeoutException e) {
-            System.out.println("Timeout");
             return resolveError(ErrorType.TIMEOUT);
         } catch (AssertionError e) {
-            System.out.println("AssertError");
             return resolveError(ErrorType.SERVER_ERROR);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return resolveError(ErrorType.UNKNOWN_ERROR);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void updateUserDisplayName(FirebaseUpdateUserDisplayNameRequest requestBody) throws TimeoutException, WebClientResponseException, AssertionError{
+        @SuppressWarnings("unchecked")
         var firebaseResponse = webClient.post()
                 .uri(builder -> builder
                         .path("/accounts:update")
@@ -130,23 +127,16 @@ public class AuthController {
             return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
         }
         var email = accountService.getAccountEmailByUsername(loginForm.get("username").toString());
-        if (email.isEmpty()) return resolveError(ErrorType.INVALID_EMAIL);
+        if (email.isEmpty()) return resolveError(ErrorType.USERNAME_NOT_FOUND);
         var password = loginForm.get("password").toString();
         var requestBody = new FirebaseLoginRequest(email.get(), password);
         return resolveLogin(requestBody);
     }
 
-    // TODO: Delete this method if register is implemented
-    @PostMapping("/login/test")
-    public ResponseEntity<Map<String, Object>> testLogin(@RequestBody Map<String, Object> loginForm) {
-        var requestBody = new FirebaseLoginRequest(loginForm.get("username").toString(), loginForm.get("password").toString());
-        return resolveLogin(requestBody);
-    }
-
-    @SuppressWarnings("unchecked")
     private ResponseEntity<Map<String, Object>> resolveLogin(FirebaseLoginRequest requestBody) {
         try {
             // Call firebase REST API & fetch response payload
+            @SuppressWarnings("unchecked")
             var firebaseResponse = webClient.post()
                     .uri(builder -> builder
                             .path("/accounts:signInWithPassword")
@@ -180,13 +170,10 @@ public class AuthController {
             response.put("message", responseBody.parseMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (TimeoutException e) {
-            System.out.println("Timeout");
             return resolveError(ErrorType.TIMEOUT);
         } catch (AssertionError e) {
-            System.out.println("AssertError");
             return resolveError(ErrorType.SERVER_ERROR);
         } catch (Exception e) {
-            System.out.println("Exception idk");
             return resolveError(ErrorType.UNKNOWN_ERROR);
         }
     }
