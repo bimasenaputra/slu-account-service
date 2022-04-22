@@ -20,7 +20,6 @@ public class ReAuthController {
 
     private final String API_KEY = "AIzaSyBI5aV5OFsrfn9TuXcCY86WAwYBvQVdUyI";
 
-    @SuppressWarnings("unchecked")
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refresh(@RequestHeader(name= HttpHeaders.COOKIE) String cookie) {
         if (cookie == null || !cookie.contains("refreshToken")) {
@@ -38,6 +37,7 @@ public class ReAuthController {
         params.put("key",API_KEY);
 
         try {
+            @SuppressWarnings("unchecked")
             var firebaseResponse = restTemplate.postForEntity("https://securetoken.googleapis.com/v1/"
                     , payload
                     , (Class<Map<String,Object>>)(Class)Map.class,params)
