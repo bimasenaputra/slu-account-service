@@ -1,10 +1,9 @@
 package id.ac.ui.cs.advprog.accountservice.controller;
 
 import com.google.gson.Gson;
-import id.ac.ui.cs.advprog.accountservice.dto.FirebaseError;
-import id.ac.ui.cs.advprog.accountservice.dto.FirebaseErrorResponse;
-import id.ac.ui.cs.advprog.accountservice.dto.FirebaseLoginRequest;
+import id.ac.ui.cs.advprog.accountservice.dto.*;
 import id.ac.ui.cs.advprog.accountservice.exception.ErrorType;
+import id.ac.ui.cs.advprog.accountservice.model.Account;
 import id.ac.ui.cs.advprog.accountservice.service.AccountService;
 import io.netty.handler.timeout.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +34,94 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> registerForm) {
-        /*
-        * TODO:
-        * 1. Create and save account to H2 database
-        * 2. Call firebase REST API to register / sign up new account
-        * 3. Set account display name with username by calling firebase REST API's update profile
-        * 4. Handle all possible exception
-        * 5. Use blocking web client / rest template to get firebase REST API response
-        * */
-        return null;
+        if (!(registerForm.containsKey("firstName") && registerForm.containsKey("lastName") && registerForm.containsKey("email") && registerForm.containsKey("username") && registerForm.containsKey("password"))) {
+            return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
+        }
+
+        var firstName = registerForm.get("firstName").toString();
+        var lastName = registerForm.get("lastName").toString();
+        var email = registerForm.get("email").toString();
+        var username = registerForm.get("username").toString();
+        var password = registerForm.get("password").toString();
+
+        var existingAccount = accountService.getAccountByUsername(username);
+        if (existingAccount.isPresent()) return resolveError(ErrorType.USERNAME_EXISTS);
+
+        var account = new Account(email, username, firstName, lastName);
+
+        var requestBody = new FirebaseRegisterRequest(email, password);
+
+        return resolveRegister(requestBody, account);
+    }
+
+    @SuppressWarnings("unchecked")
+    private ResponseEntity<Map<String, Object>> resolveRegister(FirebaseRegisterRequest requestBody, Account account) {
+        try {
+            // Call firebase REST API & fetch response payload
+            var firebaseResponse = webClient.post()
+                    .uri(builder -> builder
+                            .path("/accounts:signUp")
+                            .queryParam("key",API_KEY)
+                            .build())
+                    .body(BodyInserters.fromValue(requestBody))
+                    .retrieve()
+                    .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
+                    .timeout(Duration.ofSeconds(5))
+                    .block();
+
+            assert firebaseResponse != null;
+
+            // Call firebase REST API to update user display name
+            var updateUserDisplayNameRequestBody = new FirebaseUpdateUserDisplayNameRequest(firebaseResponse.get("idToken").toString(), account.getUsername());
+            updateUserDisplayName(updateUserDisplayNameRequestBody);
+
+            // Move token from body to secure http-only cookie for security reason
+            final String cookieValue = "idToken=" + firebaseResponse.get("idToken").toString()
+                    + "; refreshToken=" + firebaseResponse.get("refreshToken").toString()
+                    + "; Secure; HttpOnly";
+
+            var responseHeader = new HttpHeaders();
+            responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
+
+            firebaseResponse.remove("idToken");
+            firebaseResponse.remove("refreshToken");
+            firebaseResponse.remove("localId");
+
+            accountService.createAccount(account);
+
+            return ResponseEntity.ok().headers(responseHeader).body(firebaseResponse);
+        } catch (WebClientResponseException e) {
+            FirebaseError error = new Gson().fromJson(e.getResponseBodyAsString(), FirebaseError.class);
+            FirebaseErrorResponse responseBody = error.getError();
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("message", responseBody.parseMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (TimeoutException e) {
+            System.out.println("Timeout");
+            return resolveError(ErrorType.TIMEOUT);
+        } catch (AssertionError e) {
+            System.out.println("AssertError");
+            return resolveError(ErrorType.SERVER_ERROR);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return resolveError(ErrorType.UNKNOWN_ERROR);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void updateUserDisplayName(FirebaseUpdateUserDisplayNameRequest requestBody) throws TimeoutException, WebClientResponseException, AssertionError{
+        var firebaseResponse = webClient.post()
+                .uri(builder -> builder
+                        .path("/accounts:update")
+                        .queryParam("key",API_KEY)
+                        .build())
+                .body(BodyInserters.fromValue(requestBody)) // Request body payload
+                .retrieve()
+                .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
+                .timeout(Duration.ofSeconds(5)) // Cancel request if it takes more than 5 secs
+                .block();
+
+        assert firebaseResponse != null;
     }
 
     @PostMapping("/login")
