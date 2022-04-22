@@ -44,6 +44,9 @@ public class AuthController {
         var username = registerForm.get("username").toString();
         var password = registerForm.get("password").toString();
 
+        var existingAccount = accountService.getAccountByUsername(username);
+        if (existingAccount.isPresent()) return resolveError(ErrorType.USERNAME_EXISTS);
+
         var account = new Account(email, username, firstName, lastName);
 
         var requestBody = new FirebaseRegisterRequest(email, password);
