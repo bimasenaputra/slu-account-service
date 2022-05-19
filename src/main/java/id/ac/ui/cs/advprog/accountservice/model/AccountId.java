@@ -10,6 +10,4 @@ import java.io.Serializable;
 public class AccountId implements Serializable {
     private String email;
     private String username;
-    private String firstName;
-    private String lastName;
 }

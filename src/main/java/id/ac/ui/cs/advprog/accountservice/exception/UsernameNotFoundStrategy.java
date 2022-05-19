@@ -10,4 +10,7 @@ public class UsernameNotFoundStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.BAD_REQUEST; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.USERNAME_NOT_FOUND; }
 }

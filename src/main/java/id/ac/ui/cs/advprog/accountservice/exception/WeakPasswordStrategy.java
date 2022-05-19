@@ -10,4 +10,7 @@ public class WeakPasswordStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.BAD_REQUEST; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.WEAK_PASSWORD; }
 }

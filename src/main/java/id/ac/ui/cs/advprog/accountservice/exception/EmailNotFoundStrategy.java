@@ -10,4 +10,7 @@ public class EmailNotFoundStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.BAD_REQUEST; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.EMAIL_NOT_FOUND; }
 }

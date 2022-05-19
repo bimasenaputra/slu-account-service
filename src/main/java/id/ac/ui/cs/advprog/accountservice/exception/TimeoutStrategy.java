@@ -10,4 +10,7 @@ public class TimeoutStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.GATEWAY_TIMEOUT; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.TIMEOUT; }
 }

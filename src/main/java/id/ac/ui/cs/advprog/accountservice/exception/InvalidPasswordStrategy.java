@@ -10,4 +10,7 @@ public class InvalidPasswordStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.BAD_REQUEST; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.INVALID_PASSWORD; }
 }

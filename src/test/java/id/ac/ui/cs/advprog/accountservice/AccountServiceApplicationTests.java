@@ -10,4 +10,9 @@ class AccountServiceApplicationTests {
     void contextLoads() {
     }
 
+    @Test
+    public void main() {
+        AccountServiceApplication.main(new String[] {});
+    }
+
 }

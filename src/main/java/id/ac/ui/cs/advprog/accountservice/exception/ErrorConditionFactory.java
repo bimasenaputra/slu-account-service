@@ -8,8 +8,6 @@ public class ErrorConditionFactory {
     private final Map<String, ErrorStrategy> conditions = new HashMap<>();
 
     public ErrorConditionFactory() {
-        conditions.put("USER_DISABLED", new UserDisabledStrategy());
-        conditions.put("INVALID_ID_TOKEN", new InvalidIdTokenStrategy());
         conditions.put("INVALID_REFRESH_TOKEN", new InvalidRefreshTokenStrategy());
         conditions.put("EMAIL_EXISTS", new EmailExistsStrategy());
         conditions.put("EMAIL_NOT_FOUND", new EmailNotFoundStrategy());

@@ -10,4 +10,7 @@ public class UnknownErrorStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.INTERNAL_SERVER_ERROR; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.UNKNOWN_ERROR; }
 }

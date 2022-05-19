@@ -31,14 +31,14 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Optional<String> getAccountEmailByUsername(String username) {
         var account = getAccountByUsername(username);
-        var email = account.isPresent() ? account.get().getEmail() : null;
+        var email = account.map(Account::getEmail).orElse(null);
         return Optional.ofNullable(email);
     }
 
     @Override
     public Optional<String> getAccountUsernameByEmail(String email) {
         var account = getAccountByEmail(email);
-        var username = account.isPresent() ? account.get().getUsername() : null;
+        var username = account.map(Account::getUsername).orElse(null);
         return Optional.ofNullable(username);
     }
 

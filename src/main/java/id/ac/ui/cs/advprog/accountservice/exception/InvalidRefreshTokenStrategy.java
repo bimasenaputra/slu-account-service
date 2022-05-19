@@ -8,4 +8,7 @@ public class InvalidRefreshTokenStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.FORBIDDEN; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.INVALID_REFRESH_TOKEN; }
 }

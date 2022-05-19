@@ -10,4 +10,7 @@ public class WrongRequestPayloadStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.BAD_REQUEST; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.WRONG_REQUEST_PAYLOAD; }
 }
