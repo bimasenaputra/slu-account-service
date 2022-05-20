@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.accountservice.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.accountservice.dto.*;
 import id.ac.ui.cs.advprog.accountservice.model.Account;
@@ -10,13 +11,14 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import java.util.Optional;
 
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
 
@@ -34,56 +36,19 @@ public class AuthControllerTest {
     @MockBean
     private FirebaseApiService firebaseApiService;
 
-
-    @Test
-    public void register_success() throws Exception {
-        var form = new RegisterForm();
-        form.setEmail("test@test.test");
-        form.setFirstName("test");
-        form.setLastName("test");
-        form.setPassword("test");
-        form.setUsername("test");
-        Mockito.when(accountService.getAccountByUsername("test")).thenReturn(Optional.empty());
-
-        var requestMock1 = new FirebaseRegisterRequest("test","test");
-        var responseMock = new FirebaseTokenResponseV2();
-        responseMock.setIdToken("123");
-        responseMock.setRefreshToken("456");
-        Mockito.when(firebaseApiService.signupNewUser(requestMock1)).thenReturn(responseMock);
-
-        var requestMock2 = new FirebaseUpdateUserDisplayNameRequest("123","test");
-        Mockito.when(firebaseApiService.setAccountInfo(requestMock2)).thenReturn(responseMock);
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(this.mapper.writeValueAsString(form));
-
-        var account = new Account();
-        account.setEmail("test@test.test");
-        account.setFirstName("test");
-        account.setLastName("test");
-        account.setUsername("test");
-
-        verify(accountService).createAccount(account);
-
-        mockMvc.perform(mockRequest)
-                .andExpect(status().isOk())
-                .andExpect(header().string( "Set-Cookie",responseMock.getCookieValue()));
-    }
-
     @Test
     public void register_fail() throws Exception {
         var form = new RegisterForm();
-        form.setEmail("test@test.test");
-        form.setFirstName("test");
-        form.setLastName("test");
-        form.setPassword("test");
-        form.setUsername("test");
+        var strMock = Mockito.anyString();
+        form.setEmail(strMock);
+        form.setFirstName(strMock);
+        form.setLastName(strMock);
+        form.setPassword(strMock);
+        form.setUsername(strMock);
 
-        var account = new Account("test@test.test","test","test","test");
+        var accountMock = new Account(strMock,strMock,strMock,strMock);
 
-        Mockito.when(accountService.getAccountByUsername("test")).thenReturn(Optional.of(account));
+        Mockito.when(accountService.getAccountByUsername(strMock)).thenReturn(Optional.of(accountMock));
 
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,34 +58,36 @@ public class AuthControllerTest {
         mockMvc.perform(mockRequest)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", notNullValue()))
-                .andExpect(jsonPath("$.message", is("The email address is already in use by another account.")));
+                .andExpect(jsonPath("$.message", is("The username is already in use by another account.")));
     }
 
     @Test
-    public void login_success() throws Exception {
+    public void login_fail() throws Exception {
         var form = new LoginForm();
-        form.setUsername("test");
-        form.setPassword("test");
+        var strMock = Mockito.anyString();
+        form.setUsername(strMock);
+        form.setPassword(strMock);
 
-        var account = new Account("test@test.test","test","test","test");
+        Mockito.when(accountService.getAccountEmailByUsername(strMock)).thenReturn(Optional.empty());
 
-        Mockito.when(accountService.getAccountEmailByUsername(account.getUsername())).thenReturn(Optional.of(account.getEmail()));
-
-        var requestMock = new FirebaseLoginRequest(account.getEmail(),form.getPassword());
-        var responseMock = new FirebaseTokenResponseV2();
-        responseMock.setIdToken("123");
-        responseMock.setRefreshToken("456");
-        Mockito.when(firebaseApiService.verifyPassword(requestMock)).thenReturn(responseMock);
-
-        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/register")
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(this.mapper.writeValueAsString(form));
 
         mockMvc.perform(mockRequest)
-                .andExpect(status().isOk())
-                .andExpect(header().string( "Set-Cookie",responseMock.getCookieValue()));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", notNullValue()))
+                .andExpect(jsonPath("$.message", is("There is no user record corresponding to this username.")));
     }
 
-
+    @Test
+    public void refresh_fail() throws Exception {
+        MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .headers(HttpHeaders.EMPTY);
+        mockMvc.perform(mockRequest)
+                .andExpect(status().is5xxServerError());
+    }
 }

@@ -15,17 +15,17 @@ import java.time.Duration;
 
 @Service
 public class FirebaseApiServiceImpl implements FirebaseApiService {
-    @Autowired
-    private WebClient webClient;
+    private final WebClient webClient;
 
     private final RestTemplate restTemplate;
 
     @Autowired
-    public FirebaseApiServiceImpl(RestTemplateBuilder builder) {
+    public FirebaseApiServiceImpl(RestTemplateBuilder builder, WebClient webClient) {
         this.restTemplate = builder.build();
+        this.webClient = webClient;
     }
 
-    private final String API_KEY = "AIzaSyBI5aV5OFsrfn9TuXcCY86WAwYBvQVdUyI";
+    private static final String API_KEY = "AIzaSyBI5aV5OFsrfn9TuXcCY86WAwYBvQVdUyI";
 
     public FirebaseApiServiceImpl(WebClient webClient, RestTemplate restTemplate) {
         this.webClient = webClient;
@@ -61,7 +61,7 @@ public class FirebaseApiServiceImpl implements FirebaseApiService {
     }
 
     @Override
-    public FirebaseTokenResponseV2 setAccountInfo(FirebaseUpdateUserDisplayNameRequest requestBody) {
+    public FirebaseTokenResponseV2 setAccountInfo(FirebaseUpdateUserRequest requestBody) {
         return webClient.post()
                 .uri(builder -> builder
                         .path("/accounts:update")

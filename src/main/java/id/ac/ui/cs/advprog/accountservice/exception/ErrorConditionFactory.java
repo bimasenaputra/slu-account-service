@@ -16,7 +16,6 @@ public class ErrorConditionFactory {
         conditions.put("WEAK_PASSWORD", new WeakPasswordStrategy());
         conditions.put("USERNAME_EXISTS", new UsernameExistsStrategy());
         conditions.put("USERNAME_NOT_FOUND", new UsernameNotFoundStrategy());
-        conditions.put("WRONG_REQUEST_PAYLOAD", new WrongRequestPayloadStrategy());
         conditions.put("TIMEOUT", new TimeoutStrategy());
         conditions.put("SERVER_ERROR", new ServerErrorStrategy());
         conditions.put("UNKNOWN_ERROR", new UnknownErrorStrategy());

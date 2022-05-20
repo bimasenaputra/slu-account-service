@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.accountservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.accountservice.dto.*;
 import okhttp3.mockwebserver.MockResponse;
@@ -19,7 +20,11 @@ public class FirebaseApiServiceImplTest {
     private ObjectMapper mapper;
 
     private static MockWebServer mockWebServer;
-    private static FirebaseApiService firebaseApiService;
+    private FirebaseApiService firebaseApiService;
+
+    private static final String email = "satu@gmail.com";
+    private static final String headerName = "Content-Type";
+    private static final String headerValue = "application/json";
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -41,14 +46,14 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void signupNewUserTest_success() throws Exception {
+    public void signupNewUserTest_success() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
 
-        var requestMock = new FirebaseRegisterRequest("tanjirokamado@com.gmail","juichinokata");
+        var requestMock = new FirebaseRegisterRequest(email,"juichinokata");
 
-        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader(headerName, headerValue));
 
         var actualResponse = firebaseApiService.signupNewUser(requestMock);
 
@@ -62,22 +67,22 @@ public class FirebaseApiServiceImplTest {
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
 
-        var requestMock = new FirebaseRegisterRequest("tanjiro@gmail.com","PostgreSQL");
+        var requestMock = new FirebaseRegisterRequest("dua@gmail.com","PostgreSQL");
 
-        mockWebServer.enqueue(new MockResponse().setResponseCode(400).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(400).addHeader(headerName, headerValue));
 
         assertThrows(WebClientResponseException.class, () -> firebaseApiService.signupNewUser(requestMock));
     }
 
     @Test
-    public void verifyPasswordTest_success() throws Exception {
+    public void verifyPasswordTest_success() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
 
-        var requestMock = new FirebaseLoginRequest("tanjirokamado@com.gmail","juichinokata");
+        var requestMock = new FirebaseLoginRequest(email,"juichinokata");
 
-        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader(headerName, headerValue));
 
         var actualResponse = firebaseApiService.verifyPassword(requestMock);
 
@@ -87,22 +92,22 @@ public class FirebaseApiServiceImplTest {
 
     @Test
     public void verifyPasswordTest_fail() {
-        var requestMock = new FirebaseLoginRequest("tanjirokamado@com.gmail","矿泉水");
+        var requestMock = new FirebaseLoginRequest(email,"矿泉水");
 
-        mockWebServer.enqueue(new MockResponse().setResponseCode(400).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(400).addHeader(headerName, headerValue));
 
         assertThrows(WebClientResponseException.class, () -> firebaseApiService.verifyPassword(requestMock));
     }
 
     @Test
-    public void setAccountInfoTest() throws Exception {
+    public void setAccountInfoTest() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
 
-        var requestMock = new FirebaseUpdateUserDisplayNameRequest("123","Anonymous");
+        var requestMock = new FirebaseUpdateUserRequest("123","Anonymous");
 
-        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader(headerName, headerValue));
 
         var actualResponse = firebaseApiService.setAccountInfo(requestMock);
 
@@ -111,14 +116,14 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void exchangeTokenTest() throws Exception {
+    public void exchangeTokenTest() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV1();
         responseMock.setId_token("123");
         responseMock.setRefresh_token("456");
 
         var requestMock = new RefreshTokenRequest("789");
 
-        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse().setBody(this.mapper.writeValueAsString(responseMock)).addHeader(headerName, headerValue));
 
         var actualResponse = firebaseApiService.exchangeToken(requestMock);
 

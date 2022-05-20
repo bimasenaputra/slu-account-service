@@ -12,13 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CookieExtractorTest {
     @Test
     public void success() {
+        var idTokenStr = "idToken";
+        var refreshTokenStr = "refreshToken";
         var cookieSample = "idToken=123; refreshToken=456; Secure; HttpOnly";
         Map<String, String> intended = new HashMap<>();
-        intended.put("idToken", "123");
-        intended.put("refreshToken", "456");
+        intended.put(idTokenStr, "123");
+        intended.put(refreshTokenStr, "456");
         var returned = CookieExtractor.extract(cookieSample);
-        assertEquals(intended.get("idToken"), returned.get("idToken"));
-        assertEquals(intended.get("refreshToken"), returned.get("refreshToken"));
+        assertEquals(intended.get(idTokenStr), returned.get(idTokenStr));
+        assertEquals(intended.get(refreshTokenStr), returned.get(refreshTokenStr));
         assertEquals(2, returned.size());
     }
+
 }

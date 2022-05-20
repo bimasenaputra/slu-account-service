@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-@Setter
 public class FirebaseErrorResponse {
     private List<FirebaseErrorDetail> errors;
     private String code;

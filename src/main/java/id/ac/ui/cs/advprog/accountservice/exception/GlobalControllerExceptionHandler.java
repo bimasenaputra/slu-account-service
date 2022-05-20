@@ -19,8 +19,8 @@ public class GlobalControllerExceptionHandler {
 
     private final ErrorConditionFactory errorConditionFactory = new ErrorConditionFactory();
 
-    @ExceptionHandler(value = {RuntimeException.class})
-    protected ResponseEntity<Map<String, String>> handleAccountNotFound(RuntimeException ex) {
+    @ExceptionHandler(value = {IllegalArgumentException.class})
+    protected ResponseEntity<Map<String, String>> handleAccountNotFound(IllegalArgumentException ex) {
         var error = errorConditionFactory.getErrorStrategy(ex.getMessage());
         return resolveError(error.getErrorType());
     }
