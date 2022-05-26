@@ -1,180 +1,93 @@
 package id.ac.ui.cs.advprog.accountservice.controller;
 
-import com.google.gson.Gson;
 import id.ac.ui.cs.advprog.accountservice.dto.*;
 import id.ac.ui.cs.advprog.accountservice.exception.ErrorType;
 import id.ac.ui.cs.advprog.accountservice.model.Account;
 import id.ac.ui.cs.advprog.accountservice.service.AccountService;
-import io.netty.handler.timeout.TimeoutException;
-import org.springframework.beans.factory.annotation.Autowired;
+import id.ac.ui.cs.advprog.accountservice.service.FirebaseApiService;
+import id.ac.ui.cs.advprog.accountservice.util.CookieExtractor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import java.time.Duration;
-import java.util.LinkedHashMap;
+import java.net.HttpCookie;
 import java.util.Map;
-
-import static id.ac.ui.cs.advprog.accountservice.util.ErrorHandler.resolveError;
 
 
 @RestController
 @RequestMapping("auth")
 public class AuthController {
 
-    @Autowired
-    private WebClient webClient;
+    private final FirebaseApiService firebaseApiService;
 
-    @Autowired
-    private AccountService accountService;
+    private final AccountService accountService;
 
-    private final String API_KEY = "AIzaSyBI5aV5OFsrfn9TuXcCY86WAwYBvQVdUyI";
+    public AuthController(FirebaseApiService firebaseApiService, AccountService accountService) {
+        this.firebaseApiService = firebaseApiService;
+        this.accountService = accountService;
+    }
+
+    private void updateUserDisplayName(FirebaseUpdateUserRequest requestBody) {
+        var firebaseResponse = firebaseApiService.setAccountInfo(requestBody);
+        assert firebaseResponse != null;
+    }
+
+    private ResponseEntity<Map<String, String>> resolveRegister(FirebaseRegisterRequest requestBody, Account account) {
+        // Call firebase REST API & fetch response payload
+        var firebaseResponse = firebaseApiService.signupNewUser(requestBody);
+        assert firebaseResponse != null;
+        // Call firebase REST API to update user display name
+        var updateUserDisplayNameRequestBody = new FirebaseUpdateUserRequest(firebaseResponse.getIdToken(), account.getUsername());
+        updateUserDisplayName(updateUserDisplayNameRequestBody);
+        // Move token from body to secure http-only cookie for security reason
+        final String cookieValue = firebaseResponse.getCookieValue();
+        var responseHeader = new HttpHeaders();
+        responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
+        accountService.createAccount(account);
+        return ResponseEntity.ok().headers(responseHeader).build();
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> registerForm) {
-        if (!(registerForm.containsKey("firstName") && registerForm.containsKey("lastName") && registerForm.containsKey("email") && registerForm.containsKey("username") && registerForm.containsKey("password"))) {
-            return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
-        }
+    public ResponseEntity<Map<String, String>> register(@RequestBody RegisterForm registerForm) {
+        var existingAccount = accountService.getAccountByUsername(registerForm.getUsername());
+        if (existingAccount.isPresent()) throw new IllegalArgumentException(ErrorType.USERNAME_EXISTS.toString());
 
-        var firstName = registerForm.get("firstName").toString();
-        var lastName = registerForm.get("lastName").toString();
-        var email = registerForm.get("email").toString();
-        var username = registerForm.get("username").toString();
-        var password = registerForm.get("password").toString();
-
-        var existingAccount = accountService.getAccountByUsername(username);
-        if (existingAccount.isPresent()) return resolveError(ErrorType.USERNAME_EXISTS);
-
-        var account = new Account(email, username, firstName, lastName);
-
-        var requestBody = new FirebaseRegisterRequest(email, password);
+        var account = new Account(registerForm.getEmail(), registerForm.getUsername(), registerForm.getFirstName(), registerForm.getLastName());
+        var requestBody = new FirebaseRegisterRequest(registerForm.getEmail(), registerForm.getPassword());
 
         return resolveRegister(requestBody, account);
     }
 
-    private ResponseEntity<Map<String, Object>> resolveRegister(FirebaseRegisterRequest requestBody, Account account) {
-        try {
-            @SuppressWarnings("unchecked")
-            // Call firebase REST API & fetch response payload
-            var firebaseResponse = webClient.post()
-                    .uri(builder -> builder
-                            .path("/accounts:signUp")
-                            .queryParam("key",API_KEY)
-                            .build())
-                    .body(BodyInserters.fromValue(requestBody))
-                    .retrieve()
-                    .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
-                    .timeout(Duration.ofSeconds(5))
-                    .block();
-
-            assert firebaseResponse != null;
-
-            // Call firebase REST API to update user display name
-            var updateUserDisplayNameRequestBody = new FirebaseUpdateUserDisplayNameRequest(firebaseResponse.get("idToken").toString(), account.getUsername());
-            updateUserDisplayName(updateUserDisplayNameRequestBody);
-
-            // Move token from body to secure http-only cookie for security reason
-            final String cookieValue = "idToken=" + firebaseResponse.get("idToken").toString()
-                    + "; refreshToken=" + firebaseResponse.get("refreshToken").toString()
-                    + "; Secure; HttpOnly";
-
-            var responseHeader = new HttpHeaders();
-            responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
-
-            firebaseResponse.remove("idToken");
-            firebaseResponse.remove("refreshToken");
-            firebaseResponse.remove("localId");
-
-            accountService.createAccount(account);
-
-            return ResponseEntity.ok().headers(responseHeader).body(firebaseResponse);
-        } catch (WebClientResponseException e) {
-            FirebaseError error = new Gson().fromJson(e.getResponseBodyAsString(), FirebaseError.class);
-            FirebaseErrorResponse responseBody = error.getError();
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("message", responseBody.parseMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } catch (TimeoutException e) {
-            return resolveError(ErrorType.TIMEOUT);
-        } catch (AssertionError e) {
-            return resolveError(ErrorType.SERVER_ERROR);
-        } catch (Exception e) {
-            return resolveError(ErrorType.UNKNOWN_ERROR);
-        }
-    }
-
-    private void updateUserDisplayName(FirebaseUpdateUserDisplayNameRequest requestBody) throws TimeoutException, WebClientResponseException, AssertionError{
-        @SuppressWarnings("unchecked")
-        var firebaseResponse = webClient.post()
-                .uri(builder -> builder
-                        .path("/accounts:update")
-                        .queryParam("key",API_KEY)
-                        .build())
-                .body(BodyInserters.fromValue(requestBody)) // Request body payload
-                .retrieve()
-                .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
-                .timeout(Duration.ofSeconds(5)) // Cancel request if it takes more than 5 secs
-                .block();
-
+    private ResponseEntity<Map<String, String>> resolveLogin(FirebaseLoginRequest requestBody) {
+        // Call firebase REST API & fetch response payload
+        var firebaseResponse = firebaseApiService.verifyPassword(requestBody);
         assert firebaseResponse != null;
+        // Move token from body to secure http-only cookie for security reason
+        final String cookieValue = firebaseResponse.getCookieValue();
+        var responseHeader = new HttpHeaders();
+        responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
+        return ResponseEntity.ok().headers(responseHeader).build();
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> loginForm) {
-        if (!(loginForm.containsKey("username") && loginForm.containsKey("password"))) {
-            return resolveError(ErrorType.WRONG_REQUEST_PAYLOAD);
-        }
-        var email = accountService.getAccountEmailByUsername(loginForm.get("username").toString());
-        if (email.isEmpty()) return resolveError(ErrorType.USERNAME_NOT_FOUND);
-        var password = loginForm.get("password").toString();
-        var requestBody = new FirebaseLoginRequest(email.get(), password);
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginForm loginForm) {
+        var email = accountService.getAccountEmailByUsername(loginForm.getUsername());
+        if (email.isEmpty()) throw new IllegalArgumentException(ErrorType.USERNAME_NOT_FOUND.toString());
+        var requestBody = new FirebaseLoginRequest(email.get(), loginForm.getPassword());
         return resolveLogin(requestBody);
     }
 
-    private ResponseEntity<Map<String, Object>> resolveLogin(FirebaseLoginRequest requestBody) {
-        try {
-            // Call firebase REST API & fetch response payload
-            @SuppressWarnings("unchecked")
-            var firebaseResponse = webClient.post()
-                    .uri(builder -> builder
-                            .path("/accounts:signInWithPassword")
-                            .queryParam("key",API_KEY)
-                            .build())
-                    .body(BodyInserters.fromValue(requestBody))
-                    .retrieve()
-                    .bodyToMono((Class<Map<String,Object>>)(Class)Map.class)
-                    .timeout(Duration.ofSeconds(5))
-                    .block();
-
-            assert firebaseResponse != null;
-
-            // Move token from body to secure http-only cookie for security reason
-            final String cookieValue = "idToken=" + firebaseResponse.get("idToken").toString()
-                    + "; refreshToken=" + firebaseResponse.get("refreshToken").toString()
-                    + "; Secure; HttpOnly";
-
-            var responseHeader = new HttpHeaders();
-            responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
-
-            firebaseResponse.remove("idToken");
-            firebaseResponse.remove("refreshToken");
-            firebaseResponse.remove("localId");
-
-            return ResponseEntity.ok().headers(responseHeader).body(firebaseResponse);
-        } catch (WebClientResponseException e) {
-            FirebaseError error = new Gson().fromJson(e.getResponseBodyAsString(), FirebaseError.class);
-            FirebaseErrorResponse responseBody = error.getError();
-            Map<String, Object> response = new LinkedHashMap<>();
-            response.put("message", responseBody.parseMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } catch (TimeoutException e) {
-            return resolveError(ErrorType.TIMEOUT);
-        } catch (AssertionError e) {
-            return resolveError(ErrorType.SERVER_ERROR);
-        } catch (Exception e) {
-            return resolveError(ErrorType.UNKNOWN_ERROR);
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refresh(@RequestHeader(name= HttpHeaders.COOKIE) String cookie) {
+        if (cookie == null || !cookie.contains("refreshToken")) {
+            throw new AssertionError();
         }
+        var refreshToken = CookieExtractor.extract(cookie).get("refreshToken");
+        var requestBody = new RefreshTokenRequest(refreshToken);
+        var firebaseResponse = firebaseApiService.exchangeToken(requestBody);
+        assert firebaseResponse != null;
+        // Move token to secure http-only cookie for security reason
+        final String cookieValue = firebaseResponse.getCookieValue();
+        var responseHeader = new HttpHeaders();
+        responseHeader.add(HttpHeaders.SET_COOKIE, cookieValue);
+        return ResponseEntity.ok().headers(responseHeader).build();
     }
 }

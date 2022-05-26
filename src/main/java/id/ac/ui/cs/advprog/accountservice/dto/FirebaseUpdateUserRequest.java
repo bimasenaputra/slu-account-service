@@ -4,14 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
-public class FirebaseUpdateUserDisplayNameRequest {
+public class FirebaseUpdateUserRequest {
     private String idToken;
     private String displayName;
     private String photoUrl;
     private boolean returnSecureToken;
 
-    public FirebaseUpdateUserDisplayNameRequest(String idToken, String displayName) {
+    public FirebaseUpdateUserRequest(String idToken, String displayName) {
         this.idToken = idToken;
         this.displayName = displayName;
         this.photoUrl = null;

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 public class FirebaseRegisterRequest {
     private String email;
     private String password;

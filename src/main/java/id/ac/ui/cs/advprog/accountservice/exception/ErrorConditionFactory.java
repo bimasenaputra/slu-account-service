@@ -8,8 +8,6 @@ public class ErrorConditionFactory {
     private final Map<String, ErrorStrategy> conditions = new HashMap<>();
 
     public ErrorConditionFactory() {
-        conditions.put("USER_DISABLED", new UserDisabledStrategy());
-        conditions.put("INVALID_ID_TOKEN", new InvalidIdTokenStrategy());
         conditions.put("INVALID_REFRESH_TOKEN", new InvalidRefreshTokenStrategy());
         conditions.put("EMAIL_EXISTS", new EmailExistsStrategy());
         conditions.put("EMAIL_NOT_FOUND", new EmailNotFoundStrategy());
@@ -18,7 +16,6 @@ public class ErrorConditionFactory {
         conditions.put("WEAK_PASSWORD", new WeakPasswordStrategy());
         conditions.put("USERNAME_EXISTS", new UsernameExistsStrategy());
         conditions.put("USERNAME_NOT_FOUND", new UsernameNotFoundStrategy());
-        conditions.put("WRONG_REQUEST_PAYLOAD", new WrongRequestPayloadStrategy());
         conditions.put("TIMEOUT", new TimeoutStrategy());
         conditions.put("SERVER_ERROR", new ServerErrorStrategy());
         conditions.put("UNKNOWN_ERROR", new UnknownErrorStrategy());

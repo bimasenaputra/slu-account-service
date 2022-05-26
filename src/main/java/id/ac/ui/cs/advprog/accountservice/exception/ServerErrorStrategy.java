@@ -10,4 +10,7 @@ public class ServerErrorStrategy extends ErrorStrategy {
 
     @Override
     public HttpStatus getStatus() { return HttpStatus.INTERNAL_SERVER_ERROR; }
+
+    @Override
+    public ErrorType getErrorType() { return ErrorType.SERVER_ERROR; }
 }

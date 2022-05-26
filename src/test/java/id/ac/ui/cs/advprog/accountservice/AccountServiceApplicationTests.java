@@ -8,6 +8,12 @@ class AccountServiceApplicationTests {
 
     @Test
     void contextLoads() {
+        // FOR APPLICATION CONTEXT LOAD
+    }
+
+    @Test
+    public void main() {
+        AccountServiceApplication.main(new String[] {});
     }
 
 }

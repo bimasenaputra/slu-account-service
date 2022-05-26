@@ -7,10 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -22,20 +24,25 @@ public class AccountServiceImplTest {
     @InjectMocks
     private AccountServiceImpl accountService;
 
-    private Account acc = new Account();
+    private static final String firstName = "sprint";
+    private static final String lastName = "satu";
+    private static final String email = "satu@gmail.com";
+    private static final String username= "satusatu";
+
+    private final Account acc = new Account();
 
     @BeforeEach
     public void setup() {
-        acc.setFirstName("sprint");
-        acc.setLastName("satu");
-        acc.setEmail("satu@gmail.com");
-        acc.setUsername("satusatu");
+        acc.setFirstName(firstName);
+        acc.setLastName(lastName);
+        acc.setEmail(email);
+        acc.setUsername(username);
 
         accountService.createAccount(acc);
     }
 
     @Test
-    public void createAccountTest() throws Exception {
+    public void createAccountTest() {
         Account account = new Account();
         account.setFirstName("Sprint");
         account.setLastName("Satu");
@@ -47,28 +54,36 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAccountByEmailTest() throws Exception {
-        lenient().when(accountService.getAccountByEmail("satu@gmail.com")).thenReturn(Optional.ofNullable(acc));
-        var account = accountService.getAccountByEmail("satu@gmail.com");
-        verify(accountRepository, times(1)).findAccountByEmail("satu@gmail.com");
+    public void getAccountByEmailTest() {
+        Mockito.when(accountService.getAccountByEmail(email)).thenReturn(Optional.of(acc));
+        var account = accountService.getAccountByEmail(email);
+        verify(accountRepository, times(1)).findAccountByEmail(email);
+        assertEquals(acc, account.orElse(null));
     }
 
     @Test
-    public void getAccountByUsernameTest() throws Exception {
-        lenient().when(accountService.getAccountByUsername("satusatu")).thenReturn(Optional.ofNullable(acc));
-        var account = accountService.getAccountByUsername("satusatu");
-        verify(accountRepository, times(1)).findAccountByUsername("satusatu");
+    public void getAccountByUsernameTest() {
+        Mockito.when(accountService.getAccountByUsername(username)).thenReturn(Optional.of(acc));
+        var account = accountService.getAccountByUsername(username);
+        verify(accountRepository, times(1)).findAccountByUsername(username);
+        assertEquals(acc, account.orElse(null));
     }
 
     @Test
-    public void getAccountUsernameByEmailTest() throws Exception {
-        var username = accountService.getAccountUsernameByEmail("satu@gmail.com");
-        verify(accountRepository, times(1)).findAccountByEmail("satu@gmail.com");
+    public void getAccountUsernameByEmailTest() {
+        Mockito.when(accountService.getAccountUsernameByEmail(email)).thenReturn(Optional.of(acc.getUsername()));
+        Mockito.when(accountService.getAccountByEmail(email)).thenReturn(Optional.of(acc));
+        var usernameOpt = accountService.getAccountUsernameByEmail(email);
+        verify(accountRepository, times(1)).findAccountByEmail(email);
+        assertEquals(acc.getUsername(), usernameOpt.orElse(email+"b"));
     }
 
     @Test
-    public void getAccountEmailByUsernameTest() throws Exception {
-        var email = accountService.getAccountEmailByUsername("satusatu");
-        verify(accountRepository, times(1)).findAccountByUsername("satusatu");
+    public void getAccountEmailByUsernameTest() {
+        Mockito.when(accountService.getAccountEmailByUsername(username)).thenReturn(Optional.of(acc.getEmail()));
+        Mockito.when(accountService.getAccountByUsername(username)).thenReturn(Optional.of(acc));
+        var emailOpt = accountService.getAccountEmailByUsername(username);
+        verify(accountRepository, times(1)).findAccountByUsername(username);
+        assertEquals(acc.getEmail(), emailOpt.orElse(email+"a"));
     }
 }

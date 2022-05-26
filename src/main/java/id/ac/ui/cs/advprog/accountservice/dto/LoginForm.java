@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class FirebaseError {
-    private FirebaseErrorResponse error;
+@Setter
+public class LoginForm {
+    private String username;
+    private String password;
 }

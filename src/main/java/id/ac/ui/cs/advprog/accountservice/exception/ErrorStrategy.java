@@ -5,4 +5,5 @@ import org.springframework.http.HttpStatus;
 public abstract class ErrorStrategy {
     public abstract String getMessage();
     public abstract HttpStatus getStatus();
+    public abstract ErrorType getErrorType();
 }
