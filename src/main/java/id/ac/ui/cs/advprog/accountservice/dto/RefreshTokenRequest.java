@@ -4,11 +4,11 @@ import lombok.Getter;
 
 @Getter
 public class RefreshTokenRequest {
-    private String grant_type;
-    private String refresh_token;
+    private String grantType;
+    private String refreshToken;
 
-    public RefreshTokenRequest(String refresh_token) {
-        this.refresh_token = refresh_token;
-        this.grant_type = "refresh_token";
+    public RefreshTokenRequest(String refreshToken) {
+        this.refreshToken = refreshToken;
+        this.grantType = "refresh_token";
     }
 }

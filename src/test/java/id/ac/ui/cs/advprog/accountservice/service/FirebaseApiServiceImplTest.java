@@ -118,8 +118,8 @@ class FirebaseApiServiceImplTest {
     @Test
     void exchangeTokenTest() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV1();
-        responseMock.setId_token("123");
-        responseMock.setRefresh_token("456");
+        responseMock.setIdToken("123");
+        responseMock.setRefreshToken("456");
 
         var requestMock = new RefreshTokenRequest("789");
 
@@ -127,7 +127,7 @@ class FirebaseApiServiceImplTest {
 
         var actualResponse = firebaseApiService.exchangeToken(requestMock);
 
-        assertEquals(responseMock.getId_token(), actualResponse.getId_token());
-        assertEquals(responseMock.getRefresh_token(), actualResponse.getRefresh_token());
+        assertEquals(responseMock.getIdToken(), actualResponse.getIdToken());
+        assertEquals(responseMock.getRefreshToken(), actualResponse.getRefreshToken());
     }
 }
