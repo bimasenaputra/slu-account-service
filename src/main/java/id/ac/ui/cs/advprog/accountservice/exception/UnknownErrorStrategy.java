@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class UnknownErrorStrategy extends ErrorStrategy {
+public class UnknownErrorStrategy implements ErrorStrategy {
     @Override
     public String getMessage() {
         return "An unknown error has occurred. Please try again in a few moments.";

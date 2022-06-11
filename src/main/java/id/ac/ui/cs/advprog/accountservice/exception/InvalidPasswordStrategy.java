@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class InvalidPasswordStrategy extends ErrorStrategy {
+public class InvalidPasswordStrategy implements ErrorStrategy {
     @Override
     public String getMessage() {
         return "The password is invalid.";
