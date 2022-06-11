@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class UsernameNotFoundStrategy extends ErrorStrategy {
+public class UsernameNotFoundStrategy implements ErrorStrategy {
     @Override
     public String getMessage() {
         return "There is no user record corresponding to this username.";

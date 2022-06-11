@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class EmailNotFoundStrategy extends ErrorStrategy {
+public class EmailNotFoundStrategy implements ErrorStrategy {
     @Override
     public String getMessage() {
         return "There is no user record corresponding to this email.";

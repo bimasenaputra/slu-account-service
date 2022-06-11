@@ -6,12 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FirebaseTokenResponseV1 {
-    private String id_token;
-    private String refresh_token;
+    private String idToken;
+    private String refreshToken;
 
     public String getCookieValue() {
-        return "idToken=" + getId_token()
-                + "; refreshToken=" + getRefresh_token()
+        return "idToken=" + getIdToken()
+                + "; refreshToken=" + getRefreshToken()
                 + "; Secure; HttpOnly";
     }
 }

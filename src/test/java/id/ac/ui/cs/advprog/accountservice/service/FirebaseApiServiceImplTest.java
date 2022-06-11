@@ -16,7 +16,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FirebaseApiServiceImplTest {
+class FirebaseApiServiceImplTest {
     private ObjectMapper mapper;
 
     private static MockWebServer mockWebServer;
@@ -46,7 +46,7 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void signupNewUserTest_success() throws JsonProcessingException {
+    void signupNewUserTest_success() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
@@ -62,7 +62,7 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void signupNewUserTest_fail() {
+    void signupNewUserTest_fail() {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
@@ -75,7 +75,7 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void verifyPasswordTest_success() throws JsonProcessingException {
+    void verifyPasswordTest_success() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
@@ -91,7 +91,7 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void verifyPasswordTest_fail() {
+    void verifyPasswordTest_fail() {
         var requestMock = new FirebaseLoginRequest(email,"矿泉水");
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(400).addHeader(headerName, headerValue));
@@ -100,7 +100,7 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void setAccountInfoTest() throws JsonProcessingException {
+    void setAccountInfoTest() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV2();
         responseMock.setIdToken("123");
         responseMock.setRefreshToken("456");
@@ -116,10 +116,10 @@ public class FirebaseApiServiceImplTest {
     }
 
     @Test
-    public void exchangeTokenTest() throws JsonProcessingException {
+    void exchangeTokenTest() throws JsonProcessingException {
         var responseMock = new FirebaseTokenResponseV1();
-        responseMock.setId_token("123");
-        responseMock.setRefresh_token("456");
+        responseMock.setIdToken("123");
+        responseMock.setRefreshToken("456");
 
         var requestMock = new RefreshTokenRequest("789");
 
@@ -127,7 +127,7 @@ public class FirebaseApiServiceImplTest {
 
         var actualResponse = firebaseApiService.exchangeToken(requestMock);
 
-        assertEquals(responseMock.getId_token(), actualResponse.getId_token());
-        assertEquals(responseMock.getRefresh_token(), actualResponse.getRefresh_token());
+        assertEquals(responseMock.getIdToken(), actualResponse.getIdToken());
+        assertEquals(responseMock.getRefreshToken(), actualResponse.getRefreshToken());
     }
 }

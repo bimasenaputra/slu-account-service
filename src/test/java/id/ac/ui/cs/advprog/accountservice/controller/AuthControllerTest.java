@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.*;
 
 @WebMvcTest(controllers = AuthController.class)
-public class AuthControllerTest {
+class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -37,7 +37,7 @@ public class AuthControllerTest {
     private FirebaseApiService firebaseApiService;
 
     @Test
-    public void register_fail() throws Exception {
+    void register_fail() throws Exception {
         var form = new RegisterForm();
         var strMock = Mockito.anyString();
         form.setEmail(strMock);
@@ -62,7 +62,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void login_fail() throws Exception {
+    void login_fail() throws Exception {
         var form = new LoginForm();
         var strMock = Mockito.anyString();
         form.setUsername(strMock);
@@ -82,7 +82,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void refresh_fail() throws Exception {
+    void refresh_fail() throws Exception {
         MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)

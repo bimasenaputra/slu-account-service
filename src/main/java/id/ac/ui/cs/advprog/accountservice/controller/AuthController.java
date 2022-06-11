@@ -8,7 +8,6 @@ import id.ac.ui.cs.advprog.accountservice.service.FirebaseApiService;
 import id.ac.ui.cs.advprog.accountservice.util.CookieExtractor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import java.net.HttpCookie;
 import java.util.Map;
 
 

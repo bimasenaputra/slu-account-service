@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class UsernameExistsStrategy extends ErrorStrategy {
+public class UsernameExistsStrategy implements ErrorStrategy {
     @Override
     public String getMessage() {
         return "The username is already in use by another account.";

@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AccountServiceImplTest {
+class AccountServiceImplTest {
 
     @Mock
     private AccountRepository accountRepository;
@@ -32,7 +32,7 @@ public class AccountServiceImplTest {
     private final Account acc = new Account();
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         acc.setFirstName(firstName);
         acc.setLastName(lastName);
         acc.setEmail(email);
@@ -42,7 +42,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void createAccountTest() {
+    void createAccountTest() {
         Account account = new Account();
         account.setFirstName("Sprint");
         account.setLastName("Satu");
@@ -54,7 +54,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAccountByEmailTest() {
+    void getAccountByEmailTest() {
         Mockito.when(accountService.getAccountByEmail(email)).thenReturn(Optional.of(acc));
         var account = accountService.getAccountByEmail(email);
         verify(accountRepository, times(1)).findAccountByEmail(email);
@@ -62,7 +62,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAccountByUsernameTest() {
+    void getAccountByUsernameTest() {
         Mockito.when(accountService.getAccountByUsername(username)).thenReturn(Optional.of(acc));
         var account = accountService.getAccountByUsername(username);
         verify(accountRepository, times(1)).findAccountByUsername(username);
@@ -70,7 +70,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAccountUsernameByEmailTest() {
+    void getAccountUsernameByEmailTest() {
         Mockito.when(accountService.getAccountUsernameByEmail(email)).thenReturn(Optional.of(acc.getUsername()));
         Mockito.when(accountService.getAccountByEmail(email)).thenReturn(Optional.of(acc));
         var usernameOpt = accountService.getAccountUsernameByEmail(email);
@@ -79,7 +79,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void getAccountEmailByUsernameTest() {
+    void getAccountEmailByUsernameTest() {
         Mockito.when(accountService.getAccountEmailByUsername(username)).thenReturn(Optional.of(acc.getEmail()));
         Mockito.when(accountService.getAccountByUsername(username)).thenReturn(Optional.of(acc));
         var emailOpt = accountService.getAccountEmailByUsername(username);

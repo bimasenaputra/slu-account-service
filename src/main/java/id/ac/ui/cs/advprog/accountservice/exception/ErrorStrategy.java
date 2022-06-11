@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.accountservice.exception;
 
 import org.springframework.http.HttpStatus;
 
-public abstract class ErrorStrategy {
-    public abstract String getMessage();
-    public abstract HttpStatus getStatus();
-    public abstract ErrorType getErrorType();
+public interface ErrorStrategy {
+    String getMessage();
+    HttpStatus getStatus();
+    ErrorType getErrorType();
 }
