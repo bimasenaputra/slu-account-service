@@ -12,7 +12,7 @@ class AccountServiceApplicationTests {
     }
 
     @Test
-    public void main() {
+    void main() {
         AccountServiceApplication.main(new String[] {});
     }
 

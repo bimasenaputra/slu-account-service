@@ -7,12 +7,12 @@ import org.springframework.http.HttpStatus;
 
 import javax.validation.constraints.Null;
 
-public class ExceptionStrategyTest {
+class ExceptionStrategyTest {
     @Mock
     private ErrorConditionFactory factory = new ErrorConditionFactory();
 
     @Test
-    public void EmailExistsTest() {
+    void EmailExistsTest() {
         var mock1 = factory.getErrorStrategy("EMAIL_EXISTS");
         var mock2 = factory.getErrorStrategy(ErrorType.EMAIL_EXISTS);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -24,7 +24,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void EmailNotFoundTest() {
+    void EmailNotFoundTest() {
         var mock1 = factory.getErrorStrategy("EMAIL_NOT_FOUND");
         var mock2 = factory.getErrorStrategy(ErrorType.EMAIL_NOT_FOUND);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -36,7 +36,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void InvalidEmailTest() {
+    void InvalidEmailTest() {
         var mock1 = factory.getErrorStrategy("INVALID_EMAIL");
         var mock2 = factory.getErrorStrategy(ErrorType.INVALID_EMAIL);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -48,7 +48,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void InvalidPasswordTest() {
+    void InvalidPasswordTest() {
         var mock1 = factory.getErrorStrategy("INVALID_PASSWORD");
         var mock2 = factory.getErrorStrategy(ErrorType.INVALID_PASSWORD);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -60,7 +60,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void InvalidRefreshTokenTest() {
+    void InvalidRefreshTokenTest() {
         var mock1 = factory.getErrorStrategy("INVALID_REFRESH_TOKEN");
         var mock2 = factory.getErrorStrategy(ErrorType.INVALID_REFRESH_TOKEN);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -72,7 +72,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void ServerErrorTest() {
+    void ServerErrorTest() {
         var mock1 = factory.getErrorStrategy("SERVER_ERROR");
         var mock2 = factory.getErrorStrategy(ErrorType.SERVER_ERROR);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -84,7 +84,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void TimeoutTest() {
+    void TimeoutTest() {
         var mock1 = factory.getErrorStrategy("TIMEOUT");
         var mock2 = factory.getErrorStrategy(ErrorType.TIMEOUT);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -96,7 +96,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void UnknownErrorTest() {
+    void UnknownErrorTest() {
         var mock1 = factory.getErrorStrategy("UNKNOWN_ERROR");
         var mock2 = factory.getErrorStrategy(ErrorType.UNKNOWN_ERROR);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -108,7 +108,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void UsernameExistsTest() {
+    void UsernameExistsTest() {
         var mock1 = factory.getErrorStrategy("USERNAME_EXISTS");
         var mock2 = factory.getErrorStrategy(ErrorType.USERNAME_EXISTS);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -120,7 +120,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void UsernameNotFoundTest() {
+    void UsernameNotFoundTest() {
         var mock1 = factory.getErrorStrategy("USERNAME_NOT_FOUND");
         var mock2 = factory.getErrorStrategy(ErrorType.USERNAME_NOT_FOUND);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -132,7 +132,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void WeakPasswordTest() {
+    void WeakPasswordTest() {
         var mock1 = factory.getErrorStrategy("WEAK_PASSWORD");
         var mock2 = factory.getErrorStrategy(ErrorType.WEAK_PASSWORD);
         Assertions.assertEquals(mock1.getMessage(), mock2.getMessage());
@@ -144,7 +144,7 @@ public class ExceptionStrategyTest {
     }
 
     @Test
-    public void NoNameTest() {
+    void NoNameTest() {
         var mock1 = factory.getErrorStrategy((String) null);
         Assertions.assertEquals("An unknown error has occurred. Please try again in a few moments.", mock1.getMessage());
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, mock1.getStatus());

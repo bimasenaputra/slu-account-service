@@ -9,9 +9,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CookieExtractorTest {
+class CookieExtractorTest {
     @Test
-    public void success() {
+    void success() {
         var idTokenStr = "idToken";
         var refreshTokenStr = "refreshToken";
         var cookieSample = "idToken=123; refreshToken=456; Secure; HttpOnly";
