@@ -10,6 +10,8 @@ public class CookieExtractor {
 
     public static Map<String, String> extract(String cookie) {
         var cookieRegex = new Cookie("pattern","([^=]+)="+"([^\\;]+);\\s?");
+        cookieRegex.setHttpOnly(true);
+        cookieRegex.setSecure(true);
         var pattern = Pattern.compile(cookieRegex.getValue());
         var matcher = pattern.matcher(cookie);
         Map<String, String> result = new HashMap<>();
